@@ -1,0 +1,11 @@
+{
+  "projects": {
+    "user": "https://github.com/CloudComputing-Grow/user.git",
+    "achievement": "https://github.com/CloudComputing-Grow/achievement.git",
+    "gateway": "https://github.com/CloudComputing-Grow/gateway.git",
+    "mission": "https://github.com/CloudComputing-Grow/mission.git",
+    "growth-diary": "https://github.com/CloudComputing-Grow/growth-diary.git",
+    "inventory-market": "https://github.com/CloudComputing-Grow/inventory-market.git",
+    "community": "https://github.com/CloudComputing-Grow/community.git"
+  }
+}
