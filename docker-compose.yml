@@ -1,0 +1,163 @@
+version: '3.8'
+
+networks:
+  grow-network:
+    driver: bridge
+
+volumes:
+  rabbitmq-data:
+
+services:
+  # -------------------------------------------------------------
+  # 0. 인프라 
+  # -------------------------------------------------------------
+  grow-mq:
+    image: rabbitmq:3-management
+    container_name: grow-mq
+    ports:
+      - "5672:5672"     # 서비스 간 이벤트 송수신
+      - "15672:15672"   # 대시보드 관리 도구 (http://localhost:15672)
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - grow-network
+
+   grow-redis:
+    image: redis:alpine
+    container_name: grow-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - grow-network
+
+  # -------------------------------------------------------------
+  # 1. API 게이트웨이 (외부 진입점)
+  # -------------------------------------------------------------
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: grow-gateway
+    ports:
+      - "8080:8080" # 프론트엔드나 클라이언트는 이 포트로 요청을 보냄
+    depends_on:
+      - user
+    networks:
+      - grow-network
+
+  # -------------------------------------------------------------
+  # 2. 백엔드 마이크로서비스들 (Cloud SQL 각자 연결)
+  # -------------------------------------------------------------
+  user:
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    container_name: grow-user
+    environment:
+      - DB_HOST=34.50.60.106
+      - DB_USER=user_service
+      - DB_PASSWORD=user_password
+      - DB_NAME=user_db
+      - RABBITMQ_HOST=grow-mq
+    depends_on:
+      - grow-mq
+    networks:
+      - grow-network
+
+  mission:
+    build:
+      context: ./mission
+      dockerfile: Dockerfile
+    container_name: grow-mission
+    environment:
+      - DB_HOST=34.50.60.106
+      - DB_USER=mission_service
+      - DB_PASSWORD=Mission_service1234!
+      - DB_DATABASE=mission_db
+      - REDIS_HOST=grow-redis         
+      - REDIS_PORT=6379
+      - SESSION_SECRET=your_mission_service_secret
+      - GCP_KEYFILE_PATH=./config/clouding-computer-491105-07244ae433cf.json
+      - GCP_PROJECT_ID=clouding-computer-491105
+      - GCP_BUCKET_NAME=grow_mission
+      - RABBITMQ_URL=amqp://grow-mq  
+    depends_on:
+      - grow-mq
+      - grow-redis
+    networks:
+      - grow-network
+
+  growth-diary:
+    build:
+      context: ./growth-diary
+      dockerfile: Dockerfile
+    container_name: grow-diary
+    environment:
+      - DB_HOST=34.50.60.106
+      - DB_USER=diary_user
+      - DB_PASSWORD=diary_password
+      - DB_NAME=growth_diary_db
+    depends_on:
+      - grow-mq
+    networks:
+      - grow-network
+
+  inventory-market:
+    build:
+      context: ./inventory-market
+      dockerfile: Dockerfile
+    container_name: grow-inventory-market
+    environment:
+      - DB_HOST=34.50.60.106
+      - DB_USER=market_user
+      - DB_PASSWORD=market_password
+      - DB_NAME=market_db
+    depends_on:
+      - grow-mq
+    networks:
+      - grow-network
+
+  community:
+    build:
+      context: ./community
+      dockerfile: Dockerfile
+    container_name: grow-community
+    environment:
+      - DB_HOST=34.50.60.106
+      - DB_USER=community_user
+      - DB_PASSWORD=community_password
+      - DB_NAME=community_db
+    depends_on:
+      - grow-mq
+    networks:
+      - grow-network
+
+  achievement:
+    build:
+      context: ./achievement
+      dockerfile: Dockerfile
+    container_name: grow-achievement
+    environment:
+      - DB_HOST=34.50.60.106
+      - DB_USER=achievement_user
+      - DB_PASSWORD=achievement_password
+      - DB_NAME=achievement_db
+    depends_on:
+      - grow-mq
+    networks:
+      - grow-network
+
+  # -------------------------------------------------------------
+  # 3. 프론트엔드 (React Web Client)
+  # -------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: grow-frontend
+    ports:
+      - "5173:5173" # 브라우저 접근 포트 (http://localhost:5173)
+    environment:
+      - VITE_APP_API_URL=http://localhost:8080 # 백엔드 게이트웨이 주소 주입 
+    networks:
+      - grow-network
