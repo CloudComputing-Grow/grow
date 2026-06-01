@@ -11,17 +11,6 @@ services:
   # -------------------------------------------------------------
   # 0. 인프라 
   # -------------------------------------------------------------
-  grow-mq:
-    image: rabbitmq:3-management
-    container_name: grow-mq
-    ports:
-      - "5672:5672"     # 서비스 간 이벤트 송수신
-      - "15672:15672"   # 대시보드 관리 도구 (http://localhost:15672)
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
-    networks:
-      - grow-network
-
    grow-redis:
     image: redis:alpine
     container_name: grow-redis
@@ -59,8 +48,6 @@ services:
       - DB_PASSWORD=user_password
       - DB_NAME=user_db
       - RABBITMQ_HOST=grow-mq
-    depends_on:
-      - grow-mq
     networks:
       - grow-network
 
@@ -80,9 +67,10 @@ services:
       - GCP_KEYFILE_PATH=./config/clouding-computer-491105-07244ae433cf.json
       - GCP_PROJECT_ID=clouding-computer-491105
       - GCP_BUCKET_NAME=grow_mission
-      - RABBITMQ_URL=amqp://grow-mq  
+      - RABBITMQ_URL=amqp://guest:guest@34.50.25.118:5672
+    volumes:
+      - ./mission/config:/usr/src/app/config
     depends_on:
-      - grow-mq
       - grow-redis
     networks:
       - grow-network
@@ -97,8 +85,6 @@ services:
       - DB_USER=diary_user
       - DB_PASSWORD=diary_password
       - DB_NAME=growth_diary_db
-    depends_on:
-      - grow-mq
     networks:
       - grow-network
 
@@ -112,8 +98,6 @@ services:
       - DB_USER=market_user
       - DB_PASSWORD=market_password
       - DB_NAME=market_db
-    depends_on:
-      - grow-mq
     networks:
       - grow-network
 
@@ -127,8 +111,6 @@ services:
       - DB_USER=community_user
       - DB_PASSWORD=community_password
       - DB_NAME=community_db
-    depends_on:
-      - grow-mq
     networks:
       - grow-network
 
@@ -142,8 +124,6 @@ services:
       - DB_USER=achievement_user
       - DB_PASSWORD=achievement_password
       - DB_NAME=achievement_db
-    depends_on:
-      - grow-mq
     networks:
       - grow-network
 
