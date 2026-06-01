@@ -110,9 +110,9 @@ services:
       - DB_DATABASE=market_db
       - DB_PORT=3306
       - RABBITMQ_URL=amqp://guest:guest@34.50.25.118:5672
-      - GROWTH_SERVER_URL=http://growth-diary:3001
+      - GROWTH_SERVER_URL=http://growth-diary:3005
       - MISSION_SERVER_URL=http://mission:3003
-      - USER_SERVER_URL=http://user:3000
+      - USER_SERVER_URL=http://user:3001
     networks:
       - grow-network
 
