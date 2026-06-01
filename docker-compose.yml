@@ -89,9 +89,7 @@ services:
       - grow-network
 
   inventory-market:
-    build:
-      context: ./inventory-market
-      dockerfile: Dockerfile
+    image: yumyummm/inventory-market
     container_name: grow-inventory-market
     environment:
       - DB_HOST=34.50.60.106
