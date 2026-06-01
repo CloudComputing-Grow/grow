@@ -90,8 +90,11 @@ services:
 
   inventory-market:
     image: yumyummm/inventory-market
-    container_name: grow-inventory-market
+    container_name: inventory-service
+    ports:
+      - "3004:3004"
     environment:
+      - PORT=3004
       - DB_HOST=34.50.60.106
       - DB_USER=market_user
       - DB_PASSWORD=Market_pass123
