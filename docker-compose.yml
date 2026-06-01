@@ -11,7 +11,7 @@ services:
   # -------------------------------------------------------------
   # 0. 인프라 
   # -------------------------------------------------------------
-   grow-redis:
+  grow-redis:
     image: redis:alpine
     container_name: grow-redis
     ports:
