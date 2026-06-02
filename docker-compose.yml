@@ -135,10 +135,12 @@ services:
       dockerfile: Dockerfile
     container_name: grow-achievement
     environment:
+      - SERVER_PORT=3002
       - DB_HOST=34.50.60.106
-      - DB_USER=achievement_user
-      - DB_PASSWORD=achievement_password
+      - DB_PORT=3306
       - DB_NAME=achievement_db
+      - DB_USER=grow_user
+      - DB_PASSWORD=Grow1234!
     networks:
       - grow-network
 
