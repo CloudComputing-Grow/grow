@@ -89,11 +89,18 @@ services:
       context: ./growth-diary
       dockerfile: Dockerfile
     container_name: grow-diary
+    ports:
+      - "3005:3005"
     environment:
+      - PORT=3005
       - DB_HOST=34.50.60.106
-      - DB_USER=diary_user
-      - DB_PASSWORD=diary_password
+      - DB_PORT=3306
+      - DB_USER=growth_diary_user
+      - DB_PASSWORD=GrowthDiary1234!
       - DB_NAME=growth_diary_db
+      - INVENTORY_SERVER_URL=http://inventory-market:3004
+      - ACHIEVEMENT_SERVER_URL=http://achievement:3002
+      - MISSION_SERVER_URL=http://mission:3003
     networks:
       - grow-network
 
@@ -121,11 +128,17 @@ services:
       context: ./community
       dockerfile: Dockerfile
     container_name: grow-community
+    ports:
+      - "3006:3006"
     environment:
+      - PORT=3006
       - DB_HOST=34.50.60.106
       - DB_USER=community_user
-      - DB_PASSWORD=community_password
+      - DB_PASSWORD=Community1234!
       - DB_NAME=community_db
+      - USER_SERVICE_URL=http://user:3001
+      - ACHIEVEMENT_SERVICE_URL=http://achievement:3002
+      - RABBITMQ_URL=amqp://guest:guest@34.50.25.118:5672
     networks:
       - grow-network
 
