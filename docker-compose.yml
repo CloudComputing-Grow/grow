@@ -101,6 +101,8 @@ services:
       - INVENTORY_SERVER_URL=http://inventory-market:3004
       - ACHIEVEMENT_SERVER_URL=http://achievement:3002
       - MISSION_SERVER_URL=http://mission:3003
+      - RABBITMQ_URL=amqp://guest:guest@34.50.25.118:5672
+      - JWT_ACCESS_SECRET=cloud_computing_2026_grow_access_secret_key
     networks:
       - grow-network
 
