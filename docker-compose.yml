@@ -24,7 +24,7 @@ services:
   # -------------------------------------------------------------
   gateway:
     build:
-      context: ./gateway
+      context: ./gateway/gateway
       dockerfile: Dockerfile
     container_name: grow-gateway
     ports:
