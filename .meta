@@ -6,6 +6,7 @@
     "mission": "https://github.com/CloudComputing-Grow/mission.git",
     "growth-diary": "https://github.com/CloudComputing-Grow/growth-diary.git",
     "inventory-market": "https://github.com/CloudComputing-Grow/inventory-market.git",
-    "community": "https://github.com/CloudComputing-Grow/community.git"
+    "community": "https://github.com/CloudComputing-Grow/community.git",
+    "frontend": "https://github.com/CloudComputing-Grow/frontend.git"
   }
 }

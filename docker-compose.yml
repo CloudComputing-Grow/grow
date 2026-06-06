@@ -1,0 +1,175 @@
+version: '3.8'
+
+networks:
+  grow-network:
+    driver: bridge
+
+volumes:
+  rabbitmq-data:
+
+services:
+  # -------------------------------------------------------------
+  # 0. 인프라 
+  # -------------------------------------------------------------
+  grow-redis:
+    image: redis:alpine
+    container_name: grow-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - grow-network
+
+  # -------------------------------------------------------------
+  # 1. API 게이트웨이 (외부 진입점)
+  # -------------------------------------------------------------
+  gateway:
+    build:
+      context: ./gateway/gateway
+      dockerfile: Dockerfile
+    container_name: grow-gateway
+    ports:
+      - "8080:8080" # 프론트엔드나 클라이언트는 이 포트로 요청을 보냄
+    depends_on:
+      - user
+    networks:
+      - grow-network
+
+  # -------------------------------------------------------------
+  # 2. 백엔드 마이크로서비스들 (Cloud SQL 각자 연결)
+  # -------------------------------------------------------------
+  user:
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    container_name: grow-user
+    environment:
+      - PORT=3001
+      - DB_HOST=34.50.60.106
+      - DB_USER=user_service
+      - DB_PASSWORD=@Wjdkrdnjs47
+      - DB_NAME=user_db
+      - RABBITMQ_URL=amqp://guest:guest@34.50.25.118:5672
+      - JWT_ACCESS_SECRET=cloud_computing_2026_grow_access_secret_key
+      - JWT_REFRESH_SECRET=cloud_computing_2026_grow_refresh_secret_key
+      - ACCESS_TOKEN_EXPIRES_IN=1h
+      - REFRESH_TOKEN_EXPIRES_IN=30d
+      - USER_EVENT_EXCHANGE=user.events
+      - MISSION_SERVICE_URL=http://mission:3003
+      - GROWTH_SERVICE_URL=http://growth-diary:3005
+      - ACHIEVEMENT_SERVICE_URL=http://achievement:3002
+    networks:
+      - grow-network
+
+  mission:
+    build:
+      context: ./mission
+      dockerfile: Dockerfile
+    container_name: grow-mission
+    environment:
+      - DB_HOST=34.50.60.106
+      - DB_USER=mission_service
+      - DB_PASSWORD=Mission_service1234!
+      - DB_DATABASE=mission_db
+      - REDIS_HOST=grow-redis         
+      - REDIS_PORT=6379
+      - SESSION_SECRET=your_mission_service_secret
+      - GCP_KEYFILE_PATH=./config/clouding-computer-491105-07244ae433cf.json
+      - GCP_PROJECT_ID=clouding-computer-491105
+      - GCP_BUCKET_NAME=grow_mission
+      - RABBITMQ_URL=amqp://guest:guest@34.50.25.118:5672
+    volumes:
+      - ./mission/config:/usr/src/app/config
+    depends_on:
+      - grow-redis
+    networks:
+      - grow-network
+
+  growth-diary:
+    build:
+      context: ./growth-diary
+      dockerfile: Dockerfile
+    container_name: grow-diary
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+      - DB_HOST=34.50.60.106
+      - DB_PORT=3306
+      - DB_USER=growth_diary_user
+      - DB_PASSWORD=GrowthDiary1234!
+      - DB_NAME=growth_diary_db
+      - INVENTORY_SERVER_URL=http://inventory-market:3004
+      - ACHIEVEMENT_SERVER_URL=http://achievement:3002
+      - MISSION_SERVER_URL=http://mission:3003
+      - RABBITMQ_URL=amqp://guest:guest@34.50.25.118:5672
+      - JWT_ACCESS_SECRET=cloud_computing_2026_grow_access_secret_key
+    networks:
+      - grow-network
+
+  inventory-market:
+    image: yumyummm/inventory-market
+    container_name: inventory-service
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - DB_HOST=34.50.60.106
+      - DB_USER=market_user
+      - DB_PASSWORD=Market_pass123
+      - DB_DATABASE=market_db
+      - DB_PORT=3306
+      - RABBITMQ_URL=amqp://guest:guest@34.50.25.118:5672
+      - GROWTH_SERVER_URL=http://growth-diary:3005
+      - MISSION_SERVER_URL=http://mission:3003
+      - USER_SERVER_URL=http://user:3001
+    networks:
+      - grow-network
+
+  community:
+    build:
+      context: ./community
+      dockerfile: Dockerfile
+    container_name: grow-community
+    ports:
+      - "3006:3006"
+    environment:
+      - PORT=3006
+      - DB_HOST=34.50.60.106
+      - DB_USER=community_user
+      - DB_PASSWORD=Community1234!
+      - DB_NAME=community_db
+      - USER_SERVICE_URL=http://user:3001
+      - ACHIEVEMENT_SERVICE_URL=http://achievement:3002
+      - RABBITMQ_URL=amqp://guest:guest@34.50.25.118:5672
+    networks:
+      - grow-network
+
+  achievement:
+    build:
+      context: ./achievement
+      dockerfile: Dockerfile
+    container_name: grow-achievement
+    environment:
+      - SERVER_PORT=3002
+      - DB_HOST=34.50.60.106
+      - DB_PORT=3306
+      - DB_NAME=achievement_db
+      - DB_USER=grow_user
+      - DB_PASSWORD=Grow1234!
+    networks:
+      - grow-network
+
+  # -------------------------------------------------------------
+  # 3. 프론트엔드 (React Web Client)
+  # -------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: grow-frontend
+    ports:
+      - "5173:5173" # 브라우저 접근 포트 (http://localhost:5173)
+    environment:
+      - VITE_APP_API_URL=http://localhost:8080 # 백엔드 게이트웨이 주소 주입 
+    networks:
+      - grow-network
