@@ -78,7 +78,7 @@ services:
       - GCP_BUCKET_NAME=grow_mission
       - RABBITMQ_URL=amqp://guest:guest@34.50.25.118:5672
     volumes:
-      - ./mission/config:/usr/src/app/config
+      - ./mission/config:/app/config
     depends_on:
       - grow-redis
     networks:
